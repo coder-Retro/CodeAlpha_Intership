@@ -1,70 +1,108 @@
 #include <iostream>
+#include <string>
+#include <vector>
 using namespace std;
-// Course Class
+
+// Classes
 class Course {
 private:
     double gPoints;
-    size_t credit_hours;
+    int cHours;
 public:
-    void writeGrade(string g) {
-        if( g=="A+" || g=="A") gPoints=4.00;
-        else if( g=="A-" ) gPoints=3.67;
-        else if( g=="B+" ) gPoints=3.33;
-        else if( g=="B"  ) gPoints=3.00;
-        else if( g=="B-" ) gPoints=2.67;
-        else if( g=="C+" ) gPoints=2.33;
-        else if( g=="C"  ) gPoints=2.00;
-        else if( g=="C-" ) gPoints=1.67;
-        else if( g=="D+" ) gPoints=1.33;
-        else if( g=="D"  ) gPoints=1.00;
-        else if( g=="F"  ) gPoints=0.00;
-        else throw runtime_error("Invalid Inputs!");
+    Course():gPoints(0),cHours(0) {}
+    void setData(const string& grade,int ch) {
+        // Setting Grade Points
+        if( grade=="A+" || grade=="A") gPoints=4.00;
+        else if(grade=="A-") gPoints=3.67;
+        else if(grade=="B+") gPoints=3.33;
+        else if(grade=="B" ) gPoints=3.00;
+        else if(grade=="B-") gPoints=2.67;
+        else if(grade=="C+") gPoints=2.33;
+        else if(grade=="C" ) gPoints=2.00;
+        else if(grade=="C-") gPoints=1.67;
+        else if(grade=="D+") gPoints=1.33;
+        else if(grade=="D" ) gPoints=1.00;
+        else if(grade=="F" ) gPoints=0.00;
+        else gPoints=-1;
+        // Setting Credit Hours
+        if(ch>0 && ch<7) cHours=ch;
+        else             cHours=-1;
+        // Checking Data Validity
+        if(gPoints==-1 || cHours==-1)
+            throw runtime_error("Invalid Inputs!\n");
     }
-    void   writeChour(size_t ch) { credit_hours=ch; }
-    double readGPoint() const { return gPoints; }
-    size_t readChours() const { return credit_hours; }
+    double readGPoints()const { return gPoints; }
+    int readCHours()const { return cHours; }
 };
-// Helper Functions
-double sum(double* products,size_t courses) {
-    double summation=0;
-    for(size_t i=0;i<courses;i++)
-        summation+=products[i];
-    return summation;
-}
-double sum(Course* c,size_t courses) {
-    double summation=0;
-    for(size_t i=0;i<courses;i++)
-        summation+=c[i].readChours();
-    return summation;
-}
-double* pro(Course* c,size_t courses) {
-    double *products=new double[courses];
-    for(size_t i=0;i<courses;i++) {
-        products[i]=c[i].readGPoint()*c[i].readChours();
+class Semester {
+private:
+    Course temp;
+    vector<Course> c;
+    double SGPA;
+public:
+    Semester():SGPA(0) {}
+    void addCourse() {
+        string grade;
+        int cHours;
+        cout<<"Enter Grade: "; cin>>grade;
+        cout<<"Enter Credit Hours: "; cin>>cHours;
+        temp.setData(grade,cHours);
+        c.push_back(temp);
     }
-    return products;
+    double sum(vector<double>& products) {
+        double summation=0;
+        for(size_t i=0;i<products.size();i++)
+            summation+=products[i];
+        return summation;
+    }
+    double sumCredits(vector<Course>& c) {
+        double summation=0;
+        for(size_t i=0;i<c.size();i++)
+            summation+=c[i].readCHours();
+        return summation;
+    }
+    vector<double> calculateProducts(vector<Course>& c) {
+        vector<double> products;
+        for(size_t i=0;i<c.size();i++) {
+            products.push_back(c[i].readGPoints()*c[i].readCHours());
+        }
+        return products;
+    }
+    void SGPAcalculator(vector<Course>& c) {
+        vector<double> products=calculateProducts(c);
+        SGPA=sum(products)/sumCredits(c);
+    }
+    double readSGPA() {
+        SGPAcalculator(c);
+        return SGPA;
+    }
+};
+
+// Helper Function
+void results(vector<Semester>& s) {
+    double SGPA,CGPA=0;
+    cout<<"Results :\n";
+    for(size_t i=0;i<s.size();i++) {
+        SGPA=s[i].readSGPA();
+        CGPA+=SGPA;
+        cout<<"Semester "<<i+1<<" SGPA : "<<SGPA<<'\n';
+    }
+    CGPA/=s.size();
+    cout<<"CGPA : "<<CGPA;
 }
-void result(Course* c,size_t courses) {
-    double* pros=pro(c,courses);
-    double result=sum(pros,courses)/sum(c,courses);
-    cout<<"\nResult:\nGPA: "<<result;
-    delete[] pros; pros=nullptr;
-}
+
 // Main Function
 int main() {
-    size_t courses;
-    cout<<"Enter the number of courses: "; cin>>courses;
-    Course *c=new Course[courses];
-    string grade;
-    size_t credit_hours;
-    for(size_t i=0;i<courses;i++) {
-        cout<<"\nEnter Data For Course "<<i+1<<":\n";
-        cout<<"Grade: "; cin>>grade;
-        cout<<"Credit Hours: "; cin>>credit_hours;
-        c[i].writeGrade(grade);
-        c[i].writeChour(credit_hours);
+    unsigned int sems;
+    unsigned int courses;
+    cout<<"Enter Number of Semesters: "; cin>>sems;
+    vector<Semester> s(sems);
+    for(size_t i=0;i<s.size();i++) {
+        cout<<"Enter Number of Courses for Semester "<<i+1<<" : "; cin>>courses;
+        for(size_t j=0;j<courses;j++) {
+            cout<<"\nCourse "<<j+1<<" :\n";
+            s[i].addCourse();
+        }
     }
-    result(c,courses);
-    delete[] c; c=nullptr;
-    return 0;
+    results(s);
 }
