@@ -1,1 +1,1 @@
-# CodeAlpha_Intership
+# CodeAlpha_Internship
