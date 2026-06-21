@@ -70,10 +70,11 @@ void enterAccount(Account& a) {
         cout<<"\nYour Choice: "; cin>>choice;
         switch(choice) {
             // Feature's Function Calls Here
-            case 0 : cout<<'\n'<<un<<" Logging Out ...\n"; return;
+            case 0 : logout=true; break;
             default: cout<<"\nInvalid Choice!\n";
         }
     }
+    cout<<'\n'<<un<<" is Logging Out ...\n";
 }
 void loginAccount(vector<Account>& a) {
     int target_Index=searchAccount(a);
