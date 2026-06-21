@@ -33,11 +33,11 @@ void addAccount(vector<Account>& a) {
         acc.setData(un,pw);
     else
     {
-        cout<<"Username Already Taken!\n";
+        cout<<"\nUsername Already Taken!\n";
         return;
     }
     a.push_back(acc);
-    cout<<a[a.size()-1].readUsername()<<"'s Account Has Been Created.\n";
+    cout<<'\n'<<a[a.size()-1].readUsername()<<"'s Account Has Been Created.\n";
 }
 int searchAccount(vector<Account>& a) {
     string un,pw;
@@ -51,16 +51,16 @@ int searchAccount(vector<Account>& a) {
 void delAccount(vector<Account>& a) {
     int target_Index=searchAccount(a);
     if( target_Index==-1 ) {
-        cout<<"Account Not Found!\n";
+        cout<<"\nAccount Not Found!\n";
         return;
     }
     swap(a[target_Index],a[a.size()-1]);
-    cout<<a[a.size()-1].readUsername()<<"'s Account Has Been Deleted.\n";
+    cout<<'\n'<<a[a.size()-1].readUsername()<<"'s Account Has Been Deleted.\n";
     a.pop_back();
 }
 void enterAccount(Account& a) {
     string un=a.readUsername();
-    cout<<"Welcome "<<un<<'\n';
+    cout<<"\nWelcome "<<un<<"!\n";
     int choice;
     bool logout=false;
     while( !logout ) {
@@ -70,19 +70,18 @@ void enterAccount(Account& a) {
         cout<<"\nYour Choice: "; cin>>choice;
         switch(choice) {
             // Feature's Function Calls Here
-            case 0 : cout<<un<<" Logging Out ...\n"; return;
-            default: cout<<"Invalid Choice!\n";
+            case 0 : cout<<'\n'<<un<<" Logging Out ...\n"; return;
+            default: cout<<"\nInvalid Choice!\n";
         }
     }
 }
 void loginAccount(vector<Account>& a) {
     int target_Index=searchAccount(a);
     if( target_Index==-1 ) {
-        cout<<"Account Not Found!\n";
+        cout<<"\nAccount Not Found!\n";
         return;
     }
-    Account* targetAcc=&a[target_Index];
-    enterAccount(*targetAcc);
+    enterAccount(a[target_Index]);
 }
 
 // Main Function
@@ -98,10 +97,10 @@ int main() {
         cout<<"4. Exit.\n";
         cout<<"\nYour Choice: "; cin>>choice;
         switch(choice) {
-            case 1 : addAccount(acc); break;
-            case 2 : delAccount(acc); break;
-            case 3 : loginAccount(acc);   break;
-            case 4 : shutdown=true;   break;
+            case 1 : addAccount(acc);   break;
+            case 2 : delAccount(acc);   break;
+            case 3 : loginAccount(acc); break;
+            case 4 : shutdown=true;     break;
             default: cout<<"Invalid Choice!\n";
         }
     }
