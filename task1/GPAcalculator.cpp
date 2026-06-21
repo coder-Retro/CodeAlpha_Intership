@@ -81,7 +81,7 @@ public:
 // Helper Function
 void results(vector<Semester>& s) {
     double SGPA,CGPA=0;
-    cout<<"Results :\n";
+    cout<<"R\nesults :\n";
     for(size_t i=0;i<s.size();i++) {
         SGPA=s[i].readSGPA();
         CGPA+=SGPA;
