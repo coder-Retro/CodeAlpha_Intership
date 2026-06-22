@@ -1,6 +1,9 @@
 #include <iostream>
+#include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
+#include <utility>
 using namespace std;
 
 // Classes
@@ -8,14 +11,38 @@ class Account {
 private:
     string username;
     string password;
+    string fileName;
+    bool makeFile() {
+        ofstream file(fileName);
+        if(!file.is_open()) {
+            cout<<"Error Creating File!\n";
+            return false;
+        }
+        file<<username<<":"<<password;
+        file.close();
+        return true;
+    }
 public:
-    Account(): username("N/A"), password("N/A") {}
+    Account(const string& un="N/A",const string& pw="N/A") {
+        username=un;
+        password=pw;
+        fileName=un+".txt";
+        if(un!="N/A") makeFile();
+    }
     void setData(string un,string pw) {
         username=un;
         password=pw;
+        deleteFile();
+        fileName=un+".txt";
+        makeFile();
+    }
+    void deleteFile() {
+        if(filesystem::exists(fileName))
+            filesystem::remove(fileName);
     }
     string readUsername()const { return username; }
     bool matchPassword(string pw)const { return pw==password; }
+    ~Account() {}
 };
 
 // Helper Function
@@ -26,18 +53,17 @@ bool isUsernameValid(vector<Account>& a,string un) {
 }
 void addAccount(vector<Account>& a) {
     string un,pw;
-    Account acc;
     cout<<"Username: "; cin>>un;
     cout<<"Password: "; cin>>pw;
-    if(isUsernameValid(a,un))
-        acc.setData(un,pw);
-    else
-    {
+    if(isUsernameValid(a,un)) {
+        Account acc(un,pw);
+        a.push_back(acc);
+        cout<<'\n'<<a[a.size()-1].readUsername()<<"'s Account Has Been Created.\n";
+    }
+    else {
         cout<<"\nUsername Already Taken!\n";
         return;
     }
-    a.push_back(acc);
-    cout<<'\n'<<a[a.size()-1].readUsername()<<"'s Account Has Been Created.\n";
 }
 int searchAccount(vector<Account>& a) {
     string un,pw;
@@ -54,8 +80,9 @@ void delAccount(vector<Account>& a) {
         cout<<"\nAccount Not Found!\n";
         return;
     }
+    a[target_Index].deleteFile();
+    cout<<'\n'<<a[target_Index].readUsername()<<"'s Account Has Been Deleted.\n";
     swap(a[target_Index],a[a.size()-1]);
-    cout<<'\n'<<a[a.size()-1].readUsername()<<"'s Account Has Been Deleted.\n";
     a.pop_back();
 }
 void enterAccount(Account& a) {
