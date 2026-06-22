@@ -2,7 +2,6 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
-#include <vector>
 #include <utility>
 using namespace std;
 
@@ -36,6 +35,25 @@ public:
         fileName=un+".txt";
         makeFile();
     }
+    bool readFile(const string& un) {
+        string targetFile=un+".txt";
+        if(!filesystem::exists(targetFile)) return false;
+        ifstream file(targetFile);
+        if(!file.is_open()) return false;
+        string data;
+        if(getline(file,data)) {
+            size_t colon=data.find(":");
+            if(colon!=string::npos) {   
+                username=data.substr(0,colon);
+                password=data.substr(colon+1);
+                fileName=targetFile;
+                file.close();
+                return true;
+            }
+        }
+        file.close();
+        return true;
+    }
     void deleteFile() {
         if(filesystem::exists(fileName))
             filesystem::remove(fileName);
@@ -46,44 +64,42 @@ public:
 };
 
 // Helper Function
-bool isUsernameValid(vector<Account>& a,string un) {
-    for(size_t i=0;i<a.size();i++)
-        if( a[i].readUsername()==un ) return false;
-    return true;
+bool isUsernameValid(const string& un) {
+    return !filesystem::exists(un+".txt");
 }
-void addAccount(vector<Account>& a) {
+void addAccount() {
     string un,pw;
     cout<<"Username: "; cin>>un;
     cout<<"Password: "; cin>>pw;
-    if(isUsernameValid(a,un)) {
+    if(isUsernameValid(un)) {
         Account acc(un,pw);
-        a.push_back(acc);
-        cout<<'\n'<<a[a.size()-1].readUsername()<<"'s Account Has Been Created.\n";
+        cout<<'\n'<<acc.readUsername()<<"'s Account Has Been Created.\n";
     }
     else {
         cout<<"\nUsername Already Taken!\n";
         return;
     }
 }
-int searchAccount(vector<Account>& a) {
-    string un,pw;
-    cout<<"Username: "; cin>>un;
-    cout<<"Password: "; cin>>pw;
-    for(size_t i=0;i<a.size();i++)
-        if( un==a[i].readUsername() && a[i].matchPassword(pw) )
-            return i;
-    return -1;
-}
-void delAccount(vector<Account>& a) {
-    int target_Index=searchAccount(a);
-    if( target_Index==-1 ) {
-        cout<<"\nAccount Not Found!\n";
-        return;
+bool authenticateAccount(Account& a) {
+    string un, pw;
+    cout << "Username: "; cin >> un;
+    cout << "Password: "; cin >> pw;
+    if (!a.readFile(un)) {
+        cout << "\nAccount Not Found!\n";
+        return false;
     }
-    a[target_Index].deleteFile();
-    cout<<'\n'<<a[target_Index].readUsername()<<"'s Account Has Been Deleted.\n";
-    swap(a[target_Index],a[a.size()-1]);
-    a.pop_back();
+    if (!a.matchPassword(pw)) {
+        cout << "\nIncorrect Password!\n";
+        return false;
+    }
+    return true;
+}
+void delAccount() {
+    Account targetAcc;
+    if(authenticateAccount(targetAcc)) {
+        targetAcc.deleteFile();
+        cout<<'\n'<<targetAcc.readUsername()<<"'s Account Has Been Deleted.\n";
+    }
 }
 void enterAccount(Account& a) {
     string un=a.readUsername();
@@ -103,19 +119,15 @@ void enterAccount(Account& a) {
     }
     cout<<'\n'<<un<<" is Logging Out ...\n";
 }
-void loginAccount(vector<Account>& a) {
-    int target_Index=searchAccount(a);
-    if( target_Index==-1 ) {
-        cout<<"\nAccount Not Found!\n";
-        return;
-    }
-    enterAccount(a[target_Index]);
+void loginAccount() {
+    Account targetAcc;
+    if(authenticateAccount(targetAcc))
+        enterAccount(targetAcc);
 }
 
 // Main Function
 int main() {
     int choice;
-    vector<Account> acc;
     bool shutdown=false;
     while( !shutdown ) {
         cout<<"\nMenu:\n";
@@ -125,10 +137,10 @@ int main() {
         cout<<"4. Exit.\n";
         cout<<"\nYour Choice: "; cin>>choice;
         switch(choice) {
-            case 1 : addAccount(acc);   break;
-            case 2 : delAccount(acc);   break;
-            case 3 : loginAccount(acc); break;
-            case 4 : shutdown=true;     break;
+            case 1 : addAccount();   break;
+            case 2 : delAccount();   break;
+            case 3 : loginAccount(); break;
+            case 4 : shutdown=true;  break;
             default: cout<<"Invalid Choice!\n";
         }
     }
